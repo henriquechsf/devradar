@@ -4,7 +4,7 @@ const routes = require('./routes')
 
 const app = express()
 
-// Colocar o cluster, banco e senha
+// Conexão com Mongo, cluster, banco e senha
 mongoose.connect('mongodb+srv://devradar:passadm@cluster0-es145.mongodb.net/devradar?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
