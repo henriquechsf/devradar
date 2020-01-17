@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import api from './services/api'
+
 import './global.css'
 import './App.css'
 import './Sidebar.css'
@@ -7,6 +9,10 @@ import './Main.css'
 
 function App() {
   // estado do componente
+  const [devs, setDevs] = useState([])
+
+  const [github_username, setGithubUsername] = useState('')
+  const [techs, setTechs] = useState('')
   const [latitude, setLatitude] = useState('')
   const [longitude, setLongitude] = useState('')
 
@@ -27,20 +33,59 @@ function App() {
       }
     )
   }, [])
+
+  useEffect(() => {
+    async function loadDevs() {
+      const response = await api.get('/devs')
+
+      setDevs(response.data)
+    }
+
+    loadDevs()
+  }, [])
+
+  async function handleAddDev(e) {
+    e.preventDefault()
+
+    const response = await api.post('/devs', {
+      github_username,
+      techs,
+      latitude,
+      longitude,
+    })
+
+    setGithubUsername('')
+    setTechs('')
+
+    // listando os devs assim que cadastrar novo dev
+    setDevs([...devs, response.data])
+  }
   
   return (
     <div id="app">
       <aside>
         <strong>Cadastrar</strong>
-        <form>
+        <form onSubmit={handleAddDev}>
           <div className="input-block">
             <label htmlFor="github_username">Usuário do Github</label>
-            <input name="github_username" id="github_username" required />
+            <input 
+              name="github_username" 
+              id="github_username" 
+              required
+              value={github_username}
+              onChange={e => setGithubUsername(e.target.value)}
+            />
           </div>
 
           <div className="input-block">
             <label htmlFor="techs">Tecnologias</label>
-            <input name="techs" id="techs" required />
+            <input 
+              name="techs" 
+              id="techs" 
+              required
+              value={techs}
+              onChange={e => setTechs(e.target.value)}
+            />
           </div>
 
           <div className="input-group">
@@ -75,53 +120,19 @@ function App() {
 
       <main>
         <ul>
-          <li className="dev-item">
+          {devs.map(dev => (
+            <li key={dev._id} className="dev-item">
             <header>
-              <img src="https://avatars3.githubusercontent.com/u/47280581?s=460&v=4" alt="Henrique Ferreira"/>
+              <img src={dev.avatar_url} alt={dev.name}/>
               <div className="user-info">
-                <strong>Carlos Henrique</strong>
-                <span>React JS, Node JS</span>
+                <strong>{dev.name}</strong>
+                <span>{dev.techs.join(', ')}</span>
               </div>
             </header>
-            <p>Web Development Student</p>
-            <a href="https://github.com/henriquechsf">Acessar perfil no Github</a>
+            <p>{dev.bio}</p>
+            <a href={`https://github.com/${dev.github_username}`}>Acessar perfil no Github</a>
           </li>
-
-          <li className="dev-item">
-            <header>
-              <img src="https://avatars3.githubusercontent.com/u/47280581?s=460&v=4" alt="Henrique Ferreira"/>
-              <div className="user-info">
-                <strong>Carlos Henrique</strong>
-                <span>React JS, Node JS</span>
-              </div>
-            </header>
-            <p>Web Development Student</p>
-            <a href="https://github.com/henriquechsf">Acessar perfil no Github</a>
-          </li>
-
-          <li className="dev-item">
-            <header>
-              <img src="https://avatars3.githubusercontent.com/u/47280581?s=460&v=4" alt="Henrique Ferreira"/>
-              <div className="user-info">
-                <strong>Carlos Henrique</strong>
-                <span>React JS, Node JS</span>
-              </div>
-            </header>
-            <p>Web Development Student</p>
-            <a href="https://github.com/henriquechsf">Acessar perfil no Github</a>
-          </li>
-
-          <li className="dev-item">
-            <header>
-              <img src="https://avatars3.githubusercontent.com/u/47280581?s=460&v=4" alt="Henrique Ferreira"/>
-              <div className="user-info">
-                <strong>Carlos Henrique</strong>
-                <span>React JS, Node JS</span>
-              </div>
-            </header>
-            <p>Web Development Student</p>
-            <a href="https://github.com/henriquechsf">Acessar perfil no Github</a>
-          </li>
+          ))}
         </ul>
       </main>
     </div>
